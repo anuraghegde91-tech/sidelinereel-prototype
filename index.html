@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SidelineReel — Coach Review</title>
+<style>
+  :root{
+    --bg:#f4f5f7;
+    --card:#ffffff;
+    --text:#1a1d29;
+    --muted:#6b7280;
+    --border:#e5e7eb;
+    --primary:#2563eb;
+    --primary-dark:#1d4ed8;
+    --warn-bg:#fff4e5;
+    --warn-border:#f5c572;
+    --warn-text:#92400e;
+    --danger:#dc2626;
+    --success:#16a34a;
+    --success-bg:#eafaf0;
+    --radius:14px;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+    background:#dadde2;
+    display:flex;
+    justify-content:center;
+    min-height:100vh;
+  }
+  #phone{
+    width:390px;
+    min-height:100vh;
+    background:var(--bg);
+    position:relative;
+    display:flex;
+    flex-direction:column;
+    box-shadow:0 0 30px rgba(0,0,0,0.25);
+  }
+  .topbar{
+    background:var(--card);
+    border-bottom:1px solid var(--border);
+    padding:14px 16px 12px;
+    position:sticky;
+    top:0;
+    z-index:5;
+  }
+  .brand{
+    font-size:13px;
+    font-weight:700;
+    color:var(--primary);
+    letter-spacing:0.02em;
+    margin-bottom:6px;
+    display:flex;
+    align-items:center;
+    gap:6px;
+  }
+  .brand .dot{width:8px;height:8px;border-radius:50%;background:var(--primary);display:inline-block;}
+  .screen-title{
+    font-size:19px;
+    font-weight:700;
+    margin:0;
+  }
+  .screen-sub{
+    font-size:13px;
+    color:var(--muted);
+    margin-top:4px;
+  }
+  .back-row{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    margin-bottom:4px;
+  }
+  .back-btn{
+    background:none;
+    border:none;
+    color:var(--primary);
+    font-size:14px;
+    font-weight:600;
+    padding:4px 2px;
+    cursor:pointer;
+  }
+  .content{
+    flex:1;
+    padding:16px;
+    padding-bottom:90px;
+    overflow-y:auto;
+  }
+  .screen{display:none;}
+  .screen.active{display:block;}
+
+  .banner{
+    background:var(--warn-bg);
+    border:1px solid var(--warn-border);
+    color:var(--warn-text);
+    border-radius:var(--radius);
+    padding:12px 14px;
+    font-size:14px;
+    font-weight:600;
+    margin-bottom:16px;
+  }
+  .banner.success{
+    background:var(--success-bg);
+    border-color:#b7e4c7;
+    color:#14532d;
+  }
+
+  .card{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    padding:12px;
+    margin-bottom:12px;
+    display:flex;
+    gap:12px;
+    cursor:pointer;
+    transition:box-shadow .15s ease;
+  }
+  .card:hover{box-shadow:0 2px 10px rgba(0,0,0,0.06);}
+  .thumb{
+    width:64px;
+    height:64px;
+    border-radius:10px;
+    flex-shrink:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:#fff;
+    font-weight:800;
+    font-size:22px;
+    position:relative;
+  }
+  .thumb .play{
+    position:absolute;
+    bottom:3px;
+    right:3px;
+    font-size:9px;
+    background:rgba(0,0,0,0.35);
+    border-radius:4px;
+    padding:1px 3px;
+  }
+  .card-body{flex:1;min-width:0;}
+  .card-row1{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    gap:8px;
+  }
+  .det-num{font-weight:700;font-size:15px;}
+  .conf{font-size:12px;color:var(--muted);}
+  .reason{
+    font-size:12.5px;
+    color:var(--warn-text);
+    font-weight:600;
+    margin-top:3px;
+  }
+  .candidates{
+    margin-top:6px;
+    font-size:12.5px;
+    color:var(--muted);
+  }
+  .candidates b{color:var(--text);}
+  .chevron{align-self:center;color:var(--muted);font-size:18px;}
+
+  .empty-state{
+    text-align:center;
+    padding:40px 16px;
+  }
+  .empty-state .check{font-size:40px;margin-bottom:10px;}
+  .empty-state h3{margin:0 0 6px;font-size:17px;}
+  .empty-state p{margin:0 0 20px;font-size:13.5px;color:var(--muted);}
+
+  .btn{
+    display:block;
+    width:100%;
+    padding:13px;
+    border-radius:10px;
+    border:none;
+    font-size:15px;
+    font-weight:700;
+    cursor:pointer;
+    margin-bottom:10px;
+    text-align:center;
+  }
+  .btn-primary{background:var(--primary);color:#fff;}
+  .btn-primary:hover{background:var(--primary-dark);}
+  .btn-secondary{background:#fff;color:var(--text);border:1.5px solid var(--border);}
+  .btn-secondary:hover{background:#f6f7f9;}
+  .btn-danger{background:#fff;color:var(--danger);border:1.5px solid #fbd5d5;}
+  .btn-danger:hover{background:#fff5f5;}
+  .btn:disabled{opacity:0.5;cursor:not-allowed;}
+
+  .detail-thumb{
+    width:100%;
+    height:200px;
+    border-radius:var(--radius);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:#fff;
+    font-weight:800;
+    font-size:64px;
+    margin-bottom:14px;
+    position:relative;
+  }
+  .detail-thumb .play-badge{
+    position:absolute;
+    bottom:10px;
+    right:12px;
+    background:rgba(0,0,0,0.4);
+    color:#fff;
+    font-size:12px;
+    padding:4px 8px;
+    border-radius:6px;
+  }
+  .detail-meta{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    padding:12px 14px;
+    margin-bottom:16px;
+  }
+  .detail-meta .row{display:flex;justify-content:space-between;font-size:13.5px;padding:4px 0;}
+  .detail-meta .row span:first-child{color:var(--muted);}
+  .detail-meta .reason-line{
+    margin-top:6px;
+    font-size:13px;
+    font-weight:600;
+    color:var(--warn-text);
+  }
+
+  .section-label{
+    font-size:12px;
+    font-weight:700;
+    color:var(--muted);
+    text-transform:uppercase;
+    letter-spacing:0.04em;
+    margin:18px 0 8px;
+  }
+
+  select.someone-else{
+    width:100%;
+    padding:13px;
+    border-radius:10px;
+    border:1.5px solid var(--border);
+    font-size:15px;
+    font-weight:600;
+    color:var(--text);
+    margin-bottom:10px;
+    background:#fff;
+  }
+
+  .summary-card{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    padding:16px;
+    margin-bottom:18px;
+  }
+  .summary-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:9px 0;
+    border-bottom:1px solid var(--border);
+    font-size:14.5px;
+  }
+  .summary-row:last-child{border-bottom:none;}
+  .summary-row .num{font-weight:800;font-size:17px;}
+  .num.auto{color:#2563eb;}
+  .num.confirmed{color:#16a34a;}
+  .num.removed{color:#dc2626;}
+
+  .field-label{
+    font-size:13px;
+    font-weight:700;
+    color:var(--text);
+    margin-bottom:6px;
+    display:block;
+  }
+  .time-input{
+    width:100%;
+    padding:13px;
+    border-radius:10px;
+    border:1.5px solid var(--border);
+    font-size:16px;
+    margin-bottom:6px;
+  }
+  .field-note{
+    font-size:12px;
+    color:var(--muted);
+    margin-bottom:18px;
+  }
+
+  .confirmation-wrap{
+    text-align:center;
+    padding:60px 16px 20px;
+  }
+  .confirmation-wrap .big-check{
+    width:72px;height:72px;border-radius:50%;
+    background:var(--success-bg);
+    color:var(--success);
+    font-size:36px;
+    display:flex;align-items:center;justify-content:center;
+    margin:0 auto 18px;
+  }
+  .confirmation-wrap h2{margin:0 0 8px;font-size:20px;}
+  .confirmation-wrap p{color:var(--muted);font-size:14px;margin:0 0 30px;}
+
+  .metrics-footer{
+    margin-top:10px;
+    padding:12px 14px;
+    background:#f0f1f4;
+    border-radius:10px;
+    font-size:12.5px;
+    color:var(--muted);
+    display:flex;
+    align-items:center;
+    gap:6px;
+    position:relative;
+  }
+  .metrics-footer b{color:var(--text);}
+  .info-icon{
+    width:15px;height:15px;
+    border-radius:50%;
+    background:#c7cad1;
+    color:#fff;
+    font-size:10px;
+    font-weight:700;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+    flex-shrink:0;
+    margin-left:auto;
+  }
+  .tooltip{
+    display:none;
+    position:absolute;
+    bottom:34px;
+    right:0;
+    width:230px;
+    background:#1a1d29;
+    color:#fff;
+    font-size:12px;
+    line-height:1.4;
+    padding:10px 12px;
+    border-radius:8px;
+    z-index:10;
+  }
+  .tooltip.show{display:block;}
+
+  /* Parent view */
+  .parent-header{
+    text-align:center;
+    padding:6px 0 2px;
+  }
+  .parent-header h2{margin:0;font-size:17px;}
+  .parent-header p{margin:4px 0 0;font-size:12.5px;color:var(--muted);}
+  .reel-clip{
+    position:relative;
+    border-radius:var(--radius);
+    overflow:hidden;
+    margin-bottom:14px;
+    height:220px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:#fff;
+    font-weight:800;
+    font-size:48px;
+  }
+  .reel-clip .clip-label{
+    position:absolute;
+    top:10px;
+    left:10px;
+    background:rgba(0,0,0,0.45);
+    padding:4px 9px;
+    border-radius:6px;
+    font-size:12px;
+    font-weight:600;
+  }
+  .reel-clip .not-my-kid{
+    position:absolute;
+    bottom:10px;
+    right:10px;
+    background:rgba(255,255,255,0.92);
+    color:#1a1d29;
+    border:none;
+    padding:8px 12px;
+    border-radius:8px;
+    font-size:12.5px;
+    font-weight:700;
+    cursor:pointer;
+  }
+  .reel-clip.hidden-clip{display:none;}
+
+  .toast{
+    position:fixed;
+    bottom:90px;
+    left:50%;
+    transform:translateX(-50%) translateY(20px);
+    background:#1a1d29;
+    color:#fff;
+    padding:12px 18px;
+    border-radius:10px;
+    font-size:13.5px;
+    font-weight:600;
+    opacity:0;
+    pointer-events:none;
+    transition:opacity .2s ease, transform .2s ease;
+    z-index:50;
+    white-space:nowrap;
+  }
+  .toast.show{
+    opacity:1;
+    transform:translateX(-50%) translateY(0);
+  }
+
+  .bottom-fixed{
+    position:sticky;
+    bottom:0;
+    background:linear-gradient(to top, var(--bg) 70%, transparent);
+    padding:14px 16px 16px;
+  }
+
+  .demo-nav{
+    position:fixed;
+    top:10px;
+    right:calc(50% - 195px + 10px);
+    background:#1a1d29;
+    border-radius:20px;
+    padding:4px;
+    display:flex;
+    gap:2px;
+    z-index:100;
+    box-shadow:0 2px 8px rgba(0,0,0,0.3);
+  }
+  .demo-nav button{
+    border:none;
+    background:transparent;
+    color:#aeb2bd;
+    font-size:11px;
+    font-weight:700;
+    padding:6px 10px;
+    border-radius:16px;
+    cursor:pointer;
+  }
+  .demo-nav button.active{
+    background:#2563eb;
+    color:#fff;
+  }
+</style>
+</head>
+<body>
+
+<div class="demo-nav" id="demoNav">
+  <button data-mode="coach" class="active">Coach</button>
+  <button data-mode="parent">Parent</button>
+</div>
+
+<div id="phone">
+
+  <!-- ============ SCREEN 1: Review before send ============ -->
+  <div class="screen active" id="screen-review">
+    <div class="topbar">
+      <div class="brand"><span class="dot"></span>SidelineReel</div>
+      <h1 class="screen-title">Review before send</h1>
+    </div>
+    <div class="content">
+      <div id="reviewBanner" class="banner"></div>
+      <div id="uncertainList"></div>
+      <div id="emptyState" class="empty-state" style="display:none;">
+        <div class="check">✅</div>
+        <h3>All clips reviewed</h3>
+        <p>Nothing left to check. Ready to send Saturday's reels.</p>
+      </div>
+    </div>
+    <div class="bottom-fixed">
+      <button class="btn btn-primary" id="goToReadyBtn">Continue to send</button>
+    </div>
+  </div>
+
+  <!-- ============ SCREEN 2: Clip detail ============ -->
+  <div class="screen" id="screen-detail">
+    <div class="topbar">
+      <div class="back-row">
+        <button class="back-btn" id="backToReview">‹ Back</button>
+      </div>
+      <h1 class="screen-title">Confirm this clip</h1>
+    </div>
+    <div class="content">
+      <div class="detail-thumb" id="detailThumb">
+        <span class="play-badge">▶ 0:04</span>
+      </div>
+      <div class="detail-meta">
+        <div class="row"><span>Detected number</span><span id="detailDetNum" style="font-weight:700;"></span></div>
+        <div class="row"><span>Confidence</span><span id="detailConf"></span></div>
+        <div class="reason-line" id="detailReason"></div>
+      </div>
+
+      <div class="section-label">Who is this?</div>
+      <button class="btn btn-secondary" id="candBtn1"></button>
+      <button class="btn btn-secondary" id="candBtn2"></button>
+
+      <select class="someone-else" id="someoneElseSelect">
+        <option value="">Someone else ▾</option>
+      </select>
+
+      <button class="btn btn-danger" id="removeClipBtn">Remove clip</button>
+    </div>
+  </div>
+
+  <!-- ============ SCREEN 3: Ready to send ============ -->
+  <div class="screen" id="screen-ready">
+    <div class="topbar">
+      <div class="back-row">
+        <button class="back-btn" id="backToReviewFromReady">‹ Back</button>
+      </div>
+      <h1 class="screen-title">Ready to send</h1>
+      <div class="screen-sub">Saturday's game reels</div>
+    </div>
+    <div class="content">
+      <div class="summary-card">
+        <div class="summary-row"><span>Auto-tagged (high confidence)</span><span class="num auto" id="sumAuto"></span></div>
+        <div class="summary-row"><span>Confirmed by coach</span><span class="num confirmed" id="sumConfirmed"></span></div>
+        <div class="summary-row"><span>Removed</span><span class="num removed" id="sumRemoved"></span></div>
+      </div>
+
+      <label class="field-label">Send time</label>
+      <input type="time" class="time-input" id="sendTime" value="19:00">
+      <div class="field-note">Avoid late-night delivery</div>
+
+      <div class="metrics-footer" id="metricsFooter">
+        <span><b>Share rate</b> (all generated reels): 64%</span>
+        <div class="info-icon" id="metricsInfoIcon">i</div>
+        <div class="tooltip" id="metricsTooltip">
+          % of all reels auto-generated this season where at least one parent clicked "Share" — including reels that had no uncertain clips to review.
+        </div>
+      </div>
+    </div>
+    <div class="bottom-fixed">
+      <button class="btn btn-primary" id="sendReelsBtn">Send reels</button>
+    </div>
+  </div>
+
+  <!-- ============ SCREEN 3b: Confirmation ============ -->
+  <div class="screen" id="screen-confirmation">
+    <div class="topbar">
+      <div class="brand"><span class="dot"></span>SidelineReel</div>
+    </div>
+    <div class="content">
+      <div class="confirmation-wrap">
+        <div class="big-check">✓</div>
+        <h2>Reels sent!</h2>
+        <p id="confirmationDetail"></p>
+        <button class="btn btn-secondary" id="backToReviewFromConfirm">Back to review</button>
+        <button class="btn btn-secondary" id="viewAsParentBtn">View as a parent →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ SCREEN 4: Parent view ============ -->
+  <div class="screen" id="screen-parent">
+    <div class="topbar">
+      <div class="brand"><span class="dot"></span>SidelineReel</div>
+      <div class="parent-header">
+        <h2>Maya's Highlights 🏆</h2>
+        <p>Saturday vs. Riverside — sent 7:00 PM</p>
+      </div>
+    </div>
+    <div class="content" id="parentClipList"></div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  // ---------------- Fake data ----------------
+  var kids = [
+    {id:1, name:"Maya", number:14},
+    {id:2, name:"Leo", number:4},
+    {id:3, name:"Jack", number:1},
+    {id:4, name:"Sam", number:11},
+    {id:5, name:"Noah", number:16},
+    {id:6, name:"Ava", number:61},
+    {id:7, name:"Ben", number:7},
+    {id:8, name:"Zoe", number:9},
+    {id:9, name:"Eli", number:10},
+    {id:10, name:"Mia", number:22},
+    {id:11, name:"Tyler", number:23},
+    {id:12, name:"Grace", number:33}
+  ];
+
+  function kidById(id){ return kids.find(function(k){return k.id===id;}); }
+
+  var palette = ["#2563eb","#7c3aed","#db2777","#ea580c","#059669","#0891b2","#d97706","#4f46e5","#16a34a","#dc2626"];
+  function colorFor(num){ return palette[num % palette.length]; }
+
+  // clips: status = 'auto' | 'uncertain' | 'confirmed' | 'removed'
+  var clips = [
+    // 6 confident auto-tagged clips
+    {id:101, detectedNumber:7,  confidence:0.95, kidId:7,  status:'auto', hiddenByParent:false},
+    {id:102, detectedNumber:9,  confidence:0.92, kidId:8,  status:'auto', hiddenByParent:false},
+    {id:103, detectedNumber:10, confidence:0.88, kidId:9,  status:'auto', hiddenByParent:false},
+    {id:104, detectedNumber:22, confidence:0.97, kidId:10, status:'auto', hiddenByParent:false},
+    {id:105, detectedNumber:23, confidence:0.91, kidId:11, status:'auto', hiddenByParent:false},
+    {id:106, detectedNumber:33, confidence:0.85, kidId:12, status:'auto', hiddenByParent:false},
+    // 4 uncertain clips
+    {id:201, detectedNumber:4,  confidence:0.55, kidId:null, status:'uncertain',
+      reason:"Low confidence", candidates:[2,1], hiddenByParent:false},
+    {id:202, detectedNumber:14, confidence:0.92, kidId:null, status:'uncertain',
+      reason:"Looks like #4 and #14", candidates:[1,2], hiddenByParent:false},
+    {id:203, detectedNumber:1,  confidence:0.60, kidId:null, status:'uncertain',
+      reason:"Low confidence", candidates:[3,4], hiddenByParent:false},
+    {id:204, detectedNumber:61, confidence:0.90, kidId:null, status:'uncertain',
+      reason:"Looks like #16 and #61", candidates:[6,5], hiddenByParent:false}
+  ];
+
+  var currentDetailClipId = null;
+
+  // ---------------- Screen navigation ----------------
+  function showScreen(id){
+    document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('active'); });
+    document.getElementById(id).classList.add('active');
+    document.getElementById('phone').scrollTop = 0;
+    var content = document.querySelector('#'+id+' .content');
+    if(content) content.scrollTop = 0;
+  }
+
+  // ---------------- Screen 1: Review list ----------------
+  function renderReview(){
+    var uncertain = clips.filter(function(c){ return c.status==='uncertain'; });
+    var banner = document.getElementById('reviewBanner');
+    var list = document.getElementById('uncertainList');
+    var empty = document.getElementById('emptyState');
+    list.innerHTML = '';
+
+    if(uncertain.length > 0){
+      banner.style.display = 'block';
+      banner.classList.remove('success');
+      banner.textContent = uncertain.length + ' clip' + (uncertain.length===1?'':'s') + ' need' + (uncertain.length===1?'s':'') + ' your check before Saturday\'s reels go out';
+      empty.style.display = 'none';
+
+      uncertain.forEach(function(clip){
+        var card = document.createElement('div');
+        card.className = 'card';
+        card.onclick = function(){ openDetail(clip.id); };
+
+        var cand = clip.candidates.map(kidById);
+        var candText = cand.map(function(k){ return '<b>'+k.name+' #'+k.number+'</b>'; }).join(' or ');
+
+        card.innerHTML =
+          '<div class="thumb" style="background:'+colorFor(clip.detectedNumber)+';">#'+clip.detectedNumber+'<span class="play">▶</span></div>'+
+          '<div class="card-body">'+
+            '<div class="card-row1"><span class="det-num">#'+clip.detectedNumber+' detected</span><span class="conf">'+Math.round(clip.confidence*100)+'% conf.</span></div>'+
+            '<div class="reason">'+clip.reason+'</div>'+
+            '<div class="candidates">Top guesses: '+candText+'</div>'+
+          '</div>'+
+          '<div class="chevron">›</div>';
+        list.appendChild(card);
+      });
+    } else {
+      banner.style.display = 'none';
+      empty.style.display = 'block';
+    }
+  }
+
+  // ---------------- Screen 2: Detail ----------------
+  function openDetail(clipId){
+    currentDetailClipId = clipId;
+    var clip = clips.find(function(c){ return c.id===clipId; });
+    document.getElementById('detailThumb').style.background = colorFor(clip.detectedNumber);
+    document.getElementById('detailThumb').innerHTML = '#'+clip.detectedNumber+'<span class="play-badge">▶ 0:04</span>';
+    document.getElementById('detailDetNum').textContent = '#'+clip.detectedNumber;
+    document.getElementById('detailConf').textContent = Math.round(clip.confidence*100)+'%';
+    document.getElementById('detailReason').textContent = clip.reason;
+
+    var candA = kidById(clip.candidates[0]);
+    var candB = kidById(clip.candidates[1]);
+    var btn1 = document.getElementById('candBtn1');
+    var btn2 = document.getElementById('candBtn2');
+    btn1.textContent = 'Confirm ' + candA.name + ' #' + candA.number;
+    btn1.onclick = function(){ resolveClip(clip.id, candA.id); };
+    btn2.textContent = "It's " + candB.name + ' #' + candB.number;
+    btn2.onclick = function(){ resolveClip(clip.id, candB.id); };
+
+    var select = document.getElementById('someoneElseSelect');
+    select.innerHTML = '<option value="">Someone else ▾</option>';
+    kids.forEach(function(k){
+      var opt = document.createElement('option');
+      opt.value = k.id;
+      opt.textContent = k.name + ' #' + k.number;
+      select.appendChild(opt);
+    });
+    select.value = '';
+    select.onchange = function(){
+      if(select.value){ resolveClip(clip.id, parseInt(select.value,10)); }
+    };
+
+    document.getElementById('removeClipBtn').onclick = function(){ removeClip(clip.id); };
+
+    showScreen('screen-detail');
+  }
+
+  function resolveClip(clipId, kidId){
+    var clip = clips.find(function(c){ return c.id===clipId; });
+    clip.kidId = kidId;
+    clip.status = 'confirmed';
+    showScreen('screen-review');
+    renderReview();
+  }
+
+  function removeClip(clipId){
+    var clip = clips.find(function(c){ return c.id===clipId; });
+    clip.status = 'removed';
+    showScreen('screen-review');
+    renderReview();
+  }
+
+  document.getElementById('backToReview').onclick = function(){
+    showScreen('screen-review');
+    renderReview();
+  };
+
+  document.getElementById('goToReadyBtn').onclick = function(){
+    renderReady();
+    showScreen('screen-ready');
+  };
+
+  // ---------------- Screen 3: Ready to send ----------------
+  function renderReady(){
+    var autoCount = clips.filter(function(c){ return c.status==='auto'; }).length;
+    var confirmedCount = clips.filter(function(c){ return c.status==='confirmed'; }).length;
+    var removedCount = clips.filter(function(c){ return c.status==='removed'; }).length;
+    document.getElementById('sumAuto').textContent = autoCount;
+    document.getElementById('sumConfirmed').textContent = confirmedCount;
+    document.getElementById('sumRemoved').textContent = removedCount;
+  }
+
+  document.getElementById('backToReviewFromReady').onclick = function(){
+    showScreen('screen-review');
+    renderReview();
+  };
+
+  document.getElementById('metricsInfoIcon').onclick = function(e){
+    e.stopPropagation();
+    document.getElementById('metricsTooltip').classList.toggle('show');
+  };
+  document.addEventListener('click', function(e){
+    if(e.target.id !== 'metricsInfoIcon'){
+      document.getElementById('metricsTooltip').classList.remove('show');
+    }
+  });
+
+  document.getElementById('sendReelsBtn').onclick = function(){
+    var time = document.getElementById('sendTime').value || '19:00';
+    var parts = time.split(':');
+    var h = parseInt(parts[0],10);
+    var m = parts[1];
+    var ampm = h>=12 ? 'PM' : 'AM';
+    var h12 = h%12===0 ? 12 : h%12;
+    var autoCount = clips.filter(function(c){ return c.status==='auto'; }).length;
+    var confirmedCount = clips.filter(function(c){ return c.status==='confirmed'; }).length;
+    var totalSent = autoCount + confirmedCount;
+    document.getElementById('confirmationDetail').textContent =
+      totalSent + ' clips will be delivered to parents today at ' + h12 + ':' + m + ' ' + ampm + '.';
+    showScreen('screen-confirmation');
+  };
+
+  document.getElementById('backToReviewFromConfirm').onclick = function(){
+    showScreen('screen-review');
+    renderReview();
+  };
+
+  document.getElementById('viewAsParentBtn').onclick = function(){
+    setMode('parent');
+  };
+
+  // ---------------- Screen 4: Parent view ----------------
+  function renderParentView(){
+    var list = document.getElementById('parentClipList');
+    list.innerHTML = '';
+    var visibleClips = clips.filter(function(c){
+      return (c.status==='auto' || c.status==='confirmed') && !c.hiddenByParent;
+    });
+
+    if(visibleClips.length === 0){
+      list.innerHTML = '<div class="empty-state"><div class="check">🎬</div><h3>No clips left</h3><p>All clips in this reel were marked as not your kid.</p></div>';
+      return;
+    }
+
+    visibleClips.forEach(function(clip){
+      var kid = clip.kidId ? kidById(clip.kidId) : null;
+      var div = document.createElement('div');
+      div.className = 'reel-clip';
+      div.id = 'parentClip-'+clip.id;
+      div.style.background = colorFor(clip.detectedNumber);
+      var label = kid ? (kid.name + ' #' + kid.number) : ('#' + clip.detectedNumber);
+      div.innerHTML =
+        '<span class="clip-label">▶ '+label+'</span>'+
+        '#'+clip.detectedNumber+
+        '<button class="not-my-kid" data-clip="'+clip.id+'">Not my kid</button>';
+      list.appendChild(div);
+    });
+
+    list.querySelectorAll('.not-my-kid').forEach(function(btn){
+      btn.onclick = function(){
+        var clipId = parseInt(btn.getAttribute('data-clip'),10);
+        var clip = clips.find(function(c){ return c.id===clipId; });
+        clip.hiddenByParent = true;
+        var el = document.getElementById('parentClip-'+clipId);
+        if(el){ el.classList.add('hidden-clip'); }
+        showToast('Thanks — coach will review');
+        setTimeout(function(){
+          renderParentView();
+        }, 450);
+      };
+    });
+  }
+
+  var toastTimer = null;
+  function showToast(msg){
+    var t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    if(toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(function(){ t.classList.remove('show'); }, 2200);
+  }
+
+  // ---------------- Demo mode switch (Coach / Parent) ----------------
+  function setMode(mode){
+    document.querySelectorAll('#demoNav button').forEach(function(b){
+      b.classList.toggle('active', b.getAttribute('data-mode')===mode);
+    });
+    if(mode === 'parent'){
+      renderParentView();
+      showScreen('screen-parent');
+    } else {
+      renderReview();
+      showScreen('screen-review');
+    }
+  }
+
+  document.getElementById('demoNav').addEventListener('click', function(e){
+    var btn = e.target.closest('button');
+    if(!btn) return;
+    setMode(btn.getAttribute('data-mode'));
+  });
+
+  // ---------------- Init ----------------
+  renderReview();
+  showScreen('screen-review');
+})();
+</script>
+
+</body>
+</html>
