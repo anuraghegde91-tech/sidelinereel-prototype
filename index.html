@@ -273,6 +273,28 @@
   .num.auto{color:#2563eb;}
   .num.confirmed{color:#16a34a;}
   .num.removed{color:#dc2626;}
+  .num.held{color:#b45309;}
+
+  .held-banner{
+    background:var(--warn-bg);
+    border:1px solid var(--warn-border);
+    color:var(--warn-text);
+    border-radius:var(--radius);
+    padding:12px 14px;
+    font-size:14px;
+    font-weight:600;
+    margin-bottom:16px;
+    display:none;
+  }
+  .held-banner.show{display:block;}
+  .held-banner a{
+    display:inline-block;
+    margin-top:4px;
+    color:var(--primary);
+    font-weight:700;
+    text-decoration:none;
+    cursor:pointer;
+  }
 
   .field-label{
     font-size:13px;
@@ -524,9 +546,14 @@
       <div class="screen-sub">Saturday's game reels</div>
     </div>
     <div class="content">
+      <div class="held-banner" id="heldBanner">
+        <span id="heldBannerText"></span><br>
+        <a id="reviewNowLink">Review now →</a>
+      </div>
       <div class="summary-card">
         <div class="summary-row"><span>Auto-tagged (high confidence)</span><span class="num auto" id="sumAuto"></span></div>
         <div class="summary-row"><span>Confirmed by coach</span><span class="num confirmed" id="sumConfirmed"></span></div>
+        <div class="summary-row"><span>Held — not yet reviewed</span><span class="num held" id="sumHeld"></span></div>
         <div class="summary-row"><span>Removed</span><span class="num removed" id="sumRemoved"></span></div>
       </div>
 
@@ -598,6 +625,7 @@
   ];
 
   function kidById(id){ return kids.find(function(k){return k.id===id;}); }
+  var MAYA_ID = 1; // the parent view in this prototype is always Maya's family
 
   var palette = ["#2563eb","#7c3aed","#db2777","#ea580c","#059669","#0891b2","#d97706","#4f46e5","#16a34a","#dc2626"];
   function colorFor(num){ return palette[num % palette.length]; }
@@ -611,6 +639,8 @@
     {id:104, detectedNumber:22, confidence:0.97, kidId:10, status:'auto', hiddenByParent:false},
     {id:105, detectedNumber:23, confidence:0.91, kidId:11, status:'auto', hiddenByParent:false},
     {id:106, detectedNumber:33, confidence:0.85, kidId:12, status:'auto', hiddenByParent:false},
+    // confidently-wrong auto-tag: model is 93% sure, but the clip is actually Leo's (#4), not Maya's
+    {id:107, detectedNumber:4,  confidence:0.93, kidId:1,  status:'auto', hiddenByParent:false},
     // 4 uncertain clips
     {id:201, detectedNumber:4,  confidence:0.55, kidId:null, status:'uncertain',
       reason:"Low confidence", candidates:[2,1], hiddenByParent:false},
@@ -738,10 +768,26 @@
     var autoCount = clips.filter(function(c){ return c.status==='auto'; }).length;
     var confirmedCount = clips.filter(function(c){ return c.status==='confirmed'; }).length;
     var removedCount = clips.filter(function(c){ return c.status==='removed'; }).length;
+    var heldCount = clips.filter(function(c){ return c.status==='uncertain'; }).length;
     document.getElementById('sumAuto').textContent = autoCount;
     document.getElementById('sumConfirmed').textContent = confirmedCount;
+    document.getElementById('sumHeld').textContent = heldCount;
     document.getElementById('sumRemoved').textContent = removedCount;
+
+    var heldBanner = document.getElementById('heldBanner');
+    if(heldCount > 0){
+      heldBanner.classList.add('show');
+      document.getElementById('heldBannerText').textContent =
+        heldCount + ' held — not sent until you review';
+    } else {
+      heldBanner.classList.remove('show');
+    }
   }
+
+  document.getElementById('reviewNowLink').onclick = function(){
+    showScreen('screen-review');
+    renderReview();
+  };
 
   document.getElementById('backToReviewFromReady').onclick = function(){
     showScreen('screen-review');
@@ -787,7 +833,7 @@
     var list = document.getElementById('parentClipList');
     list.innerHTML = '';
     var visibleClips = clips.filter(function(c){
-      return (c.status==='auto' || c.status==='confirmed') && !c.hiddenByParent;
+      return c.kidId === MAYA_ID && (c.status==='auto' || c.status==='confirmed') && !c.hiddenByParent;
     });
 
     if(visibleClips.length === 0){
@@ -814,9 +860,25 @@
         var clipId = parseInt(btn.getAttribute('data-clip'),10);
         var clip = clips.find(function(c){ return c.id===clipId; });
         clip.hiddenByParent = true;
+
+        // send it back to the coach queue, flagged as a parent report
+        var wronglyTaggedKidId = clip.kidId;
+        var detectedKid = kids.find(function(k){ return k.number===clip.detectedNumber; });
+        var candidates = [];
+        if(detectedKid && detectedKid.id !== wronglyTaggedKidId) candidates.push(detectedKid.id);
+        if(wronglyTaggedKidId) candidates.push(wronglyTaggedKidId);
+        while(candidates.length < 2){
+          var filler = kids.find(function(k){ return candidates.indexOf(k.id)===-1; });
+          candidates.push(filler.id);
+        }
+        clip.candidates = candidates;
+        clip.kidId = null;
+        clip.status = 'uncertain';
+        clip.reason = 'Reported by parent';
+
         var el = document.getElementById('parentClip-'+clipId);
         if(el){ el.classList.add('hidden-clip'); }
-        showToast('Thanks — coach will review');
+        showToast('Thanks — your coach will review this clip');
         setTimeout(function(){
           renderParentView();
         }, 450);
