@@ -1,5 +1,5 @@
 Video: [VIDEO_LINK]
-Prototype: https://tatsyatech.github.io/sidelinereel-prototype/
+Prototype: https://anuraghegde91-tech.github.io/sidelinereel-prototype/
 Submitted for the Ajaia PM assessment — https://ajaia.ai
 
 ## Task 1 – Roadmap call
@@ -76,12 +76,12 @@ Coach decides every uncertain tag; parent can flag any sent clip; the system nev
 
 ## Task 3 – Prototype
 
-**Public link:** https://tatsyatech.github.io/sidelinereel-prototype/
+**Public link:** https://anuraghegde91-tech.github.io/sidelinereel-prototype/
 
 **How to run:** Open `index.html` in any browser (no build step, no backend, works offline by double-clicking the file) or visit the public link above. A "Coach / Parent" toggle in the top-right switches between the two views for demo purposes.
 
 **Click path:**
-Review queue → clip detail → Confirm / Reassign / Remove → Ready to send (7 PM default, honest metric) → Send → Parent view → "Not my kid"
+Review queue → clip detail → Confirm / Reassign / Remove → Continue with clips held → Ready to send (held count, 7 PM default, share rate over all reels) → Send → Parent view (Maya only) → "Not my kid" → back to Coach queue showing the parent report
 
 ## Task 4 – AI workflow note
 
